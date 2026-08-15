@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>VPesa Login</title>
+
+    {% load static %}
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/style.css' %}"
+    >
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="form">
+
+        <h1>VPesa</h1>
+
+        <h2>Login</h2>
+
+        <input
+            id="username"
+            type="text"
+            placeholder="Username"
+            autocomplete="username"
+        >
+
+        <input
+            id="password"
+            type="password"
+            placeholder="Password"
+            autocomplete="current-password"
+        >
+
+        <button onclick="login()">
+            Login
+        </button>
+
+        <p id="message"></p>
+
+        <p>
+            Don't have an account?
+            <a href="/register/">Create one</a>
+        </p>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function getCookie(name) {
+
+    let cookieValue = null;
+
+    if (document.cookie && document.cookie !== "") {
+
+        const cookies =
+            document.cookie.split(";");
+
+        for (let cookie of cookies) {
+
+            cookie = cookie.trim();
+
+            if (
+                cookie.substring(
+                    0,
+                    name.length + 1
+                ) === name + "="
+            ) {
+
+                cookieValue =
+                    decodeURIComponent(
+                        cookie.substring(
+                            name.length + 1
+                        )
+                    );
+
+                break;
+            }
+        }
+    }
+
+    return cookieValue;
+}
+
+
+async function login() {
+
+    const username =
+        document.getElementById(
+            "username"
+        ).value.trim();
+
+    const password =
+        document.getElementById(
+            "password"
+        ).value;
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+    if (!username || !password) {
+
+        message.textContent =
+            "Please enter your username and password.";
+
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/token/",
+                {
+                    method: "POST",
+
+                    credentials: "same-origin",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "X-CSRFToken":
+                            getCookie("csrftoken")
+                    },
+
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            message.textContent =
+                data.detail ||
+                "Login failed.";
+
+            return;
+        }
+
+        localStorage.setItem(
+            "vpesa_access",
+            data.access
+        );
+
+        localStorage.setItem(
+            "vpesa_refresh",
+            data.refresh
+        );
+
+        window.location.href =
+            "/dashboard/";
+
+    } catch (error) {
+
+        message.textContent =
+            "Could not connect to VPesa.";
+
+        console.error(error);
+    }
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>VPesa - Create Account</title>
+
+    {% load static %}
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/style.css' %}"
+    >
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="form">
+
+        <h1>VPesa</h1>
+
+        <h2>Create Account</h2>
+
+        <p>
+            Create your VPesa account below.
+        </p>
+
+
+        <input
+            id="username"
+            type="text"
+            placeholder="Username"
+            autocomplete="username"
+        >
+
+
+        <input
+            id="fullName"
+            type="text"
+            placeholder="Full name"
+            autocomplete="name"
+        >
+
+
+        <input
+            id="phone"
+            type="tel"
+            placeholder="Phone number"
+            autocomplete="tel"
+        >
+
+
+        <input
+            id="password"
+            type="password"
+            placeholder="Password"
+            autocomplete="new-password"
+        >
+
+
+        <input
+            id="confirmPassword"
+            type="password"
+            placeholder="Confirm password"
+            autocomplete="new-password"
+        >
+
+
+        <button
+            onclick="register()"
+            id="registerButton"
+        >
+            Create Account
+        </button>
+
+
+        <p id="message"></p>
+
+
+        <p>
+            Already have an account?
+            <a href="/login/">Login</a>
+        </p>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function getCookie(name) {
+
+    let cookieValue = null;
+
+    if (
+        document.cookie &&
+        document.cookie !== ""
+    ) {
+
+        const cookies =
+            document.cookie.split(";");
+
+        for (let cookie of cookies) {
+
+            cookie = cookie.trim();
+
+            if (
+                cookie.substring(
+                    0,
+                    name.length + 1
+                ) === name + "="
+            ) {
+
+                cookieValue =
+                    decodeURIComponent(
+                        cookie.substring(
+                            name.length + 1
+                        )
+                    );
+
+                break;
+            }
+        }
+    }
+
+    return cookieValue;
+}
+
+
+async function register() {
+
+    const username =
+        document.getElementById(
+            "username"
+        ).value.trim();
+
+    const fullName =
+        document.getElementById(
+            "fullName"
+        ).value.trim();
+
+    const phone =
+        document.getElementById(
+            "phone"
+        ).value.trim();
+
+    const password =
+        document.getElementById(
+            "password"
+        ).value;
+
+    const confirmPassword =
+        document.getElementById(
+            "confirmPassword"
+        ).value;
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+    const button =
+        document.getElementById(
+            "registerButton"
+        );
+
+
+    /*
+     * Basic validation
+     */
+
+    if (
+        !username ||
+        !fullName ||
+        !phone ||
+        !password ||
+        !confirmPassword
+    ) {
+
+        message.textContent =
+            "Please fill in all fields.";
+
+        return;
+    }
+
+
+    /*
+     * Check passwords
+     */
+
+    if (password !== confirmPassword) {
+
+        message.textContent =
+            "Passwords do not match.";
+
+        return;
+    }
+
+
+    /*
+     * Password length
+     */
+
+    if (password.length < 8) {
+
+        message.textContent =
+            "Password must contain at least 8 characters.";
+
+        return;
+    }
+
+
+    /*
+     * Prevent double-clicking
+     */
+
+    button.disabled = true;
+
+    button.textContent =
+        "Creating account...";
+
+
+    try {
+
+        const csrfToken =
+            getCookie("csrftoken");
+
+
+        const response =
+            await fetch(
+                "/api/auth/register/",
+                {
+                    method: "POST",
+
+                    credentials:
+                        "same-origin",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json",
+
+                        "X-CSRFToken":
+                            csrfToken
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            username:
+                                username,
+
+                            full_name:
+                                fullName,
+
+                            phone_number:
+                                phone,
+
+                            password:
+                                password
+                        })
+                }
+            );
+
+
+        /*
+         * Try to read the JSON response
+         */
+
+        const data =
+            await response.json();
+
+
+        /*
+         * Registration failed
+         */
+
+        if (!response.ok) {
+
+            console.error(
+                "Registration error:",
+                data
+            );
+
+
+            /*
+             * Django REST Framework
+             * normally returns validation
+             * errors as an object.
+             */
+
+            if (
+                typeof data === "object"
+            ) {
+
+                const errors =
+                    Object.entries(data)
+                        .map(
+                            ([field, errors]) => {
+
+                                if (
+                                    Array.isArray(
+                                        errors
+                                    )
+                                ) {
+
+                                    return (
+                                        field +
+                                        ": " +
+                                        errors.join(
+                                            ", "
+                                        )
+                                    );
+
+                                }
+
+                                return (
+                                    field +
+                                    ": " +
+                                    errors
+                                );
+                            }
+                        )
+                        .join("\n");
+
+                message.textContent =
+                    errors ||
+                    "Registration failed.";
+
+            } else {
+
+                message.textContent =
+                    "Registration failed.";
+            }
+
+
+            button.disabled = false;
+
+            button.textContent =
+                "Create Account";
+
+            return;
+        }
+
+
+        /*
+         * Registration succeeded
+         */
+
+        message.textContent =
+            "Account created successfully! Redirecting to login...";
+
+
+        /*
+         * Give the user a moment
+         * to see the message.
+         */
+
+        setTimeout(
+            function () {
+
+                window.location.href =
+                    "/login/";
+
+            },
+            1500
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Network error:",
+            error
+        );
+
+
+        message.textContent =
+            "Could not connect to VPesa. Make sure the Django server is running.";
+
+
+        button.disabled = false;
+
+        button.textContent =
+            "Create Account";
+    }
+
+}
+
+</script>
+
+</body>
+
+</html>

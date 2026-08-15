@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>VPesa</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/css/style.css"
+    >
+
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div class="logo">
+        VPesa
+    </div>
+
+    <button
+        onclick="logout()"
+        class="logout"
+    >
+        Logout
+    </button>
+
+</header>
+
+
+<main class="container">
+
+    <section class="balance-card">
+
+        <p>Available Balance</p>
+
+        <h1>
+            KSh <span id="balance">0.00</span>
+        </h1>
+
+        <button onclick="refreshBalance()">
+            Refresh
+        </button>
+
+    </section>
+
+
+    <section class="actions">
+
+        <button onclick="showDeposit()">
+            Deposit
+        </button>
+
+        <button onclick="showSend()">
+            Send Money
+        </button>
+
+        <button onclick="showWithdraw()">
+            Withdraw
+        </button>
+
+    </section>
+
+
+    <section id="form-area">
+
+    </section>
+
+
+    <section class="transactions">
+
+        <h2>
+            Transactions
+        </h2>
+
+        <div id="transaction-list">
+
+            Loading...
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script src="/static/js/app.js"></script>
+
+</body>
+
+</html>
