@@ -9,3 +9,5 @@ venv/
 *.log
 staticfiles/
 media/
+.vercel
+.env*
